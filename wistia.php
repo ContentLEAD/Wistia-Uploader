@@ -4,20 +4,22 @@
 	
 	//ini_set('display_errors', 1); //display errors on the page
 	error_reporting(E_ALL); // what level of errors to display
-    // Enter Brafton and Wistia credentials
-define("brafton_video_publicKey","U4S7U8A9");
-define("brafton_video_secretKey","29f07cf9-50c8-42b5-abf0-123eb614d4fd");
-define("wistia_apiKey","6f74fc1c7144d7917c862f2de03592b0e47cbf99a7ebeca9f13f2ba095384416");
-define("project", "hedroj7xb6");
 
     //you might need to change these
-	
-	include './RCClientLibrary/AdferoArticlesVideoExtensions/AdferoVideoClient.php';
+	include './specs/creds.json';
+	require_once './RCClientLibrary/AdferoArticlesVideoExtensions/AdferoVideoClient.php';
 	require_once './RCClientLibrary/AdferoArticles/AdferoClient.php';
 	require_once './RCClientLibrary/AdferoPhotos/AdferoPhotoClient.php';
 	
 	//get list of titles
-	
+	$crude = file_get_contents("./specs/creds.json");
+    $refined = json_decode($crude);
+    // Define Constants
+    define("brafton_video_publicKey",$refined->brafton_video_publicKey);
+    define("brafton_video_secretKey",$refined->brafton_video_privateKey);
+    define("wistia_apiKey",$refined->wistia_api);
+    define("project", $refined->project);
+    define("domain", $refined->domain);
     $existing_videos = get('https://api.wistia.com/v1/medias.json');
 	$titles = array();
 	if(empty($existing_videos)){
@@ -35,8 +37,7 @@ define("project", "hedroj7xb6");
 	
 	function import_videos($titles){
         $params = array('max'=>99);
-        $domain = preg_replace('/https:\/\//','','https://api.brafton.com');
-
+        $domain = preg_replace('/https:\/\//','',domain);
         $baseURL = 'http://livevideo.'.str_replace('http://', '',$domain).'/v2/';
         $videoClient = new AdferoVideoClient($baseURL, brafton_video_publicKey, brafton_video_secretKey);
         $client = new AdferoClient($baseURL, brafton_video_publicKey, brafton_video_secretKey);
