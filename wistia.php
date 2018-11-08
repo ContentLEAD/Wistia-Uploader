@@ -57,7 +57,6 @@
 
         
         $articles_imported = 0;
-       $i = 0;
        foreach ($articles->items as $a) {
 
             $articles_imported++;
@@ -75,12 +74,10 @@
             // check against existing posts here.  Use title.
             if (in_array($post_title,$titles)) {
                 echo $post_title . " exists<br/>";
-                $i++;
                 continue;
             } else {
                 echo "posting: $post_title <br/>";
             }
-            $i++;
             // Enter Author Tag
             //$author = author;
             
