@@ -237,7 +237,9 @@ class AdferoFeedsClient {
      * @return AdferoFeedList 
      */
     private function ListFeedsFromXmlString($xml) {
+
         $xml = new SimpleXMLElement($xml);
+        
         $totalCount = intval($xml->feeds['totalCount']);
         $feedItems = array();
 

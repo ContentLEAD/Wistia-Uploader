@@ -2,23 +2,24 @@
 	//todo: write code to check titles
 	//insert video keys
 	
-	ini_set('display_errors', 1); //display errors on the page
+	//ini_set('display_errors', 1); //display errors on the page
 	error_reporting(E_ALL); // what level of errors to display
 
-    // Enter Brafton and Wistia credentials
-define("brafton_video_publicKey","");
-define("brafton_video_secretKey","");
-define("wistia_apiKey","");
-define("project", "");
-
     //you might need to change these
-	
-	require_once dirname(__FILE__) . '/Classes/RCClientLibrary/AdferoArticlesVideoExtensions/AdferoVideoClient.php';
-	require_once dirname(__FILE__) . '/Classes/RCClientLibrary/AdferoArticles/AdferoClient.php';
-	require_once dirname(__FILE__) . '/Classes/RCClientLibrary/AdferoPhotos/AdferoPhotoClient.php';
+	include './specs/creds.json';
+	require_once './RCClientLibrary/AdferoArticlesVideoExtensions/AdferoVideoClient.php';
+	require_once './RCClientLibrary/AdferoArticles/AdferoClient.php';
+	require_once './RCClientLibrary/AdferoPhotos/AdferoPhotoClient.php';
 	
 	//get list of titles
-	
+	$crude = file_get_contents("./specs/creds.json");
+    $refined = json_decode($crude);
+    // Define Constants
+    define("brafton_video_publicKey",$refined->brafton_video_publicKey);
+    define("brafton_video_secretKey",$refined->brafton_video_privateKey);
+    define("wistia_apiKey",$refined->wistia_api);
+    define("project", $refined->project);
+    define("domain", $refined->domain);
     $existing_videos = get('https://api.wistia.com/v1/medias.json');
 	$titles = array();
 	if(empty($existing_videos)){
@@ -35,33 +36,32 @@ define("project", "");
     import_videos($titles);
 	
 	function import_videos($titles){
-
         $params = array('max'=>99);
-
-        $baseURL = 'http://livevideo.api.brafton.com/v2/';
+        $domain = preg_replace('/https:\/\//','',domain);
+        $baseURL = 'http://livevideo.'.str_replace('http://', '',$domain).'/v2/';
         $videoClient = new AdferoVideoClient($baseURL, brafton_video_publicKey, brafton_video_secretKey);
         $client = new AdferoClient($baseURL, brafton_video_publicKey, brafton_video_secretKey);
         $videoOutClient = $videoClient->videoOutputs();
 
         $photos = $client->ArticlePhotos();
-        $photoURI = "http://pictures.brafton.com/v2/";
+        $photoURI = 'http://'.str_replace('api', 'pictures',$domain).'/v2/';
         $photoClient = new AdferoPhotoClient($photoURI);
         $scale_axis = 500;
         $scale = 500;
-
         $feeds = $client->Feeds();
         $feedList = $feeds->ListFeeds(0,10);
-
         $articleClient=$client->Articles();
 
         //CHANGE FEED NUM HERE
-        $articles = $articleClient->ListForFeed($feedList->items[4]->id,'live',0,100);
+        $articles = $articleClient->ListForFeed($feedList->items[0]->id,'live',0,100);
 
+        
         $articles_imported = 0;
-
+       $i = 0;
        foreach ($articles->items as $a) {
+
             $articles_imported++;
-            if($articles_imported>2) break;
+            if($articles_imported>3) break;
             //max of five articles imported
 
             $thisArticle = $client->Articles()->Get($a->id);
@@ -71,15 +71,16 @@ define("project", "");
             $createCat = array();
 
             $post_title = $thisArticle->fields['title'];
-
+            
             // check against existing posts here.  Use title.
-
-            if (array_search($post_title,$titles) != false) {
+            if (in_array($post_title,$titles)) {
                 echo $post_title . " exists<br/>";
+                $i++;
                 continue;
             } else {
                 echo "posting: $post_title <br/>";
             }
+            $i++;
             // Enter Author Tag
             //$author = author;
             
@@ -105,27 +106,25 @@ define("project", "");
                             
             $videoList=$videoOutClient->ListForArticle($brafton_id,0,10);
             $list=$videoList->items;
-            $mp4=false;
+            $mp4=true;
             $HDmp4=false;
 
             foreach($list as $listItem){
                     $output=$videoOutClient->Get($listItem->id);
-                    //logMsg($output->path);
-                    if($output->type=="custom") {
+                    if($output->type=="htmlmp4") {
                         $path = $output->path;
                         $ext = pathinfo($path, PATHINFO_EXTENSION);
                         if($ext == "mp4") $HDmp4 = $path;
-					}
+                    }
             }
 			if($HDmp4){
             //upload HD video!
                 upload($HDmp4,urlencode($post_title));
             } else if($mp4){
 			//upload standard video here!
-				upload($mp4,urlencode($post_title));
+				upload($path,urlencode($post_title));
 			} else echo "no mp4's or HD MP4's!<br/>";
-        }
-        
+        }        
     }
 
     function list_projects(){
@@ -146,7 +145,6 @@ define("project", "");
         $vars = "?username=api&api_password=" . wistia_apiKey . "&url=$fileurl&name=$name";
         
         if(project != "") $vars .= "&project_id=" . project;
-
         post($vars);
 	}
         
