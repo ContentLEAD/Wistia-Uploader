@@ -224,6 +224,7 @@ class AdferoFeedsClient {
         $uri = $this->GetUri(null, null, "xml", $properties, null, $offset, $limit);
         $uri = "http://" . $this->credentials->getPublicKey() . ":" . $this->credentials->getSecretKey() . "@" . str_replace("http://", "", $uri);
         $xmlString = AdferoHelpers::GetXMLFromUri($uri);
+        echo $xmlString;
         $feeds = $this->ListFeedsFromXmlString($xmlString);
         $feeds->limit = $limit;
         $feeds->offset = $offset;
@@ -237,7 +238,9 @@ class AdferoFeedsClient {
      * @return AdferoFeedList 
      */
     private function ListFeedsFromXmlString($xml) {
+
         $xml = new SimpleXMLElement($xml);
+        
         $totalCount = intval($xml->feeds['totalCount']);
         $feedItems = array();
 
