@@ -57,7 +57,7 @@
 
         
         $articles_imported = 0;
-
+       $i = 0;
        foreach ($articles->items as $a) {
 
             $articles_imported++;
@@ -73,13 +73,14 @@
             $post_title = $thisArticle->fields['title'];
             
             // check against existing posts here.  Use title.
-
-            if (array_search($post_title,$titles) != false) {
+            if (in_array($post_title,$titles)) {
                 echo $post_title . " exists<br/>";
+                $i++;
                 continue;
             } else {
                 echo "posting: $post_title <br/>";
             }
+            $i++;
             // Enter Author Tag
             //$author = author;
             
@@ -169,7 +170,6 @@
 
 	function post($vars){
         // intialize cURL and send POST data
-        var_dump($vars);
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
