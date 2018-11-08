@@ -61,7 +61,7 @@
        foreach ($articles->items as $a) {
 
             $articles_imported++;
-            if($articles_imported>2) break;
+            if($articles_imported>3) break;
             //max of five articles imported
 
             $thisArticle = $client->Articles()->Get($a->id);
@@ -110,9 +110,6 @@
 
             foreach($list as $listItem){
                     $output=$videoOutClient->Get($listItem->id);
-                    //logMsg($output->path);
-                    var_dump($output);
-                    echo '<br />'. $output->type;
                     if($output->type=="htmlmp4") {
                         $path = $output->path;
                         $ext = pathinfo($path, PATHINFO_EXTENSION);
