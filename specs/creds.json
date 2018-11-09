@@ -1,0 +1,7 @@
+{
+    "project" : "xxxxxxxx",
+    "wistia_api" : "xxxxxxxxxxxxxxxxxxxxxxxxx",
+    "brafton_video_publicKey" : "xxxxxxxx",
+    "brafton_video_privateKey" : "xxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "domain" : "https://api.brafton.com"
+}
